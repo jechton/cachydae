@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -f ~/.config/cachydae/current/theme/eza.yml ]; then
+  ln -snf ~/.config/cachydae/current/theme/eza.yml ~/.config/eza/theme.yml
+else
+  rm -f ~/.config/eza/theme.yml
+fi

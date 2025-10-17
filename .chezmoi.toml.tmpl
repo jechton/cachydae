@@ -1,0 +1,30 @@
+{{- $machineType := "desktop" -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-     if eq (output "hostnamectl" "--json=short" | mustFromJson).Chassis "laptop" "convertible" -}}
+{{-       $machineType = "laptop" -}}
+{{-     end -}}
+{{- else if eq .chezmoi.os "android" -}}
+{{-   $machineType = "phone" -}}
+{{- end -}}
+
+{{- $osId := .chezmoi.os -}}
+{{- if (and (eq .chezmoi.os "linux") (hasKey .chezmoi.osRelease "id")) -}}
+{{-   $osId = printf "%s-%s" .chezmoi.os .chezmoi.osRelease.id -}}
+{{- end -}}
+
+pager = "bat"
+
+[git]
+  autoAdd = true
+  autoCommit = false
+
+[diff]
+  pager = "delta --side-by-side"
+
+[data.machine]
+  type = {{ $machineType | quote }}
+  headless = {{ eq $osId "linux-debian" }}
+  pi = {{ eq $osId "linux-debian" }}
+
+[data.os]
+  id = {{ $osId | quote }}

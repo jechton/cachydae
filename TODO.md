@@ -1,0 +1,2 @@
+- [ ] Get a music app
+- [ ] Set up picard

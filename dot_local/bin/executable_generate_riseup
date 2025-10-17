@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+set -eu
+
+# Configuration
+OUTPUT_FILE="riseup-ovpn.conf"
+BLACKLIST_FILE="blacklist.txt"
+PING_TEST="yes"
+TOP_COUNT=5
+ADD_COMMENTS="yes"
+FASTEST_ONLY=""
+
+# Help
+show_help() {
+    cat <<EOF
+Generate Riseup VPN config with blacklist support
+
+Usage: $(basename "$0") [OPTIONS]
+
+Options:
+  --fastest               Only use the fastest server (no random)
+  --no-ping               Skip ping test (include all servers)
+  -t, --top N             How many servers to include (default: 5)
+  -b, --blacklist FILE    Blacklist file (default: blacklist.txt)
+  --no-comments           Don't add server info as comments
+  -h, --help              Show this help
+
+Examples:
+  $(basename "$0")                    # Use 5 fastest servers (default)
+  $(basename "$0") --fastest          # Use only the fastest server
+  $(basename "$0") -t 3               # Use 3 fastest servers
+  $(basename "$0") --no-ping          # Include all servers (no ping test)
+  $(basename "$0") -b bad-ips.txt     # Use custom blacklist
+
+Blacklist format (one IP per line):
+  198.252.153.226
+  # This is a comment
+  198.252.153.98
+
+EOF
+}
+
+# Parse Arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --fastest) FASTEST_ONLY="yes"; TOP_COUNT=1; shift ;;
+        --no-ping) PING_TEST=""; shift ;;
+        -t|--top) TOP_COUNT=$2; shift 2 ;;
+        -b|--blacklist) BLACKLIST_FILE=$2; shift 2 ;;
+        --no-comments) ADD_COMMENTS=""; shift ;;
+        -h|--help) show_help; exit 0 ;;
+        *) echo "Unknown option: $1"; show_help; exit 1 ;;
+    esac
+done
+
+# Check Requirements
+for cmd in curl jq; do
+    if ! command -v $cmd >/dev/null 2>&1; then
+        echo "Error: $cmd is not installed"
+        echo "Install with: apt install curl jq"
+        exit 1
+    fi
+done
+
+if [ -n "$PING_TEST" ] && ! command -v ping >/dev/null 2>&1; then
+    echo "Error: ping is not installed (needed for --ping)"
+    exit 1
+fi
+
+# Load Blacklist
+declare -a BLACKLIST
+if [[ -f "$BLACKLIST_FILE" ]]; then
+    echo "Loading blacklist from $BLACKLIST_FILE"
+    while read -r ip; do
+        # Skip empty lines and comments
+        [[ -z "$ip" || "$ip" =~ ^# ]] && continue
+        BLACKLIST+=("$ip")
+    done < "$BLACKLIST_FILE"
+    echo "Blacklisted ${#BLACKLIST[@]} IP(s)"
+fi
+
+# Download Certificates
+echo "Downloading certificates..."
+CA=$(curl -sS --fail https://api.black.riseup.net/ca.crt)
+KEY_CERT=$(curl -sS --fail https://api.black.riseup.net/3/cert)
+
+# Extract key and certificate
+KEY=$(echo "$KEY_CERT" | awk '/BEGIN RSA PRIVATE KEY/,/END RSA PRIVATE KEY/')
+CERT=$(echo "$KEY_CERT" | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/')
+
+# Download Server List
+echo "Downloading server list..."
+SERVERS=$(curl -sS --fail https://api.black.riseup.net/3/config/eip-service.json)
+
+# Process Servers
+declare -a SERVER_LIST
+
+echo "Processing servers..."
+for server_b64 in $(echo "$SERVERS" | jq -r '.gateways[] | @base64'); do
+    server=$(echo "$server_b64" | base64 -d)
+
+    IP=$(echo "$server" | jq -r '.ip_address')
+    HOST=$(echo "$server" | jq -r '.host')
+    LOCATION=$(echo "$server" | jq -r '.location')
+
+    # Check blacklist
+    skip=0
+    for blacklisted_ip in "${BLACKLIST[@]}"; do
+        if [[ "$IP" == "$blacklisted_ip" ]]; then
+            echo "Skipping blacklisted: $IP"
+            skip=1
+            break
+        fi
+    done
+    [[ $skip -eq 1 ]] && continue
+
+    # Add to list
+    SERVER_LIST+=("$IP|$HOST|$LOCATION")
+done
+
+# Ping Test (Default behavior)
+if [ -n "$PING_TEST" ]; then
+    echo "Pinging servers to find fastest ones (this takes a minute)..."
+    declare -a PING_RESULTS
+
+    for entry in "${SERVER_LIST[@]}"; do
+        IFS='|' read -r IP HOST LOCATION <<< "$entry"
+
+        # Ping and get average time
+        AVG=$(ping -c 3 -W 2 "$IP" 2>/dev/null | tail -1 | awk '{print $4}' | cut -d'/' -f2)
+
+        if [ -n "$AVG" ]; then
+            PING_RESULTS+=("$AVG|$IP|$HOST|$LOCATION")
+            echo "  $IP ($LOCATION): ${AVG}ms"
+        fi
+    done
+
+    # Sort by ping time and take top N
+    SERVER_LIST=()
+    while IFS='|' read -r AVG IP HOST LOCATION; do
+        SERVER_LIST+=("$IP|$HOST|$LOCATION|${AVG}ms")
+    done < <(printf '%s\n' "${PING_RESULTS[@]}" | sort -t'|' -k1 -n | head -n "$TOP_COUNT")
+fi
+
+# Generate Config File
+echo "Generating config file: $OUTPUT_FILE"
+
+cat > "$OUTPUT_FILE" <<EOF
+# Riseup VPN OpenVPN Configuration
+# Generated: $(date)
+
+client
+dev tun
+proto tcp
+$([ -z "$FASTEST_ONLY" ] && echo "remote-random")
+nobind
+
+# Security
+remote-cert-tls server
+auth-nocache
+cipher AES-256-GCM
+data-ciphers AES-256-GCM
+
+# Connection
+keepalive 10 30
+verb 3
+
+# IPv6 disabled
+pull-filter ignore "tun-ipv6"
+pull-filter ignore "route-ipv6"
+pull-filter ignore "ifconfig-ipv6"
+block-ipv6
+
+# Servers
+EOF
+
+# Add server entries
+for entry in "${SERVER_LIST[@]}"; do
+    IFS='|' read -r IP HOST LOCATION PING <<< "$entry"
+
+    if [ -n "$ADD_COMMENTS" ]; then
+        echo "remote $IP 53 # $HOST ($LOCATION)${PING:+ - $PING}" >> "$OUTPUT_FILE"
+    else
+        echo "remote $IP 53" >> "$OUTPUT_FILE"
+    fi
+done
+
+# Add certificates
+cat >> "$OUTPUT_FILE" <<EOF
+
+# Certificates
+<ca>
+$CA
+</ca>
+
+<key>
+$KEY
+</key>
+
+<cert>
+$CERT
+</cert>
+EOF
+
+# Done
+echo ""
+echo "✓ Config created: $OUTPUT_FILE"
+echo "✓ Added ${#SERVER_LIST[@]} server(s)"
+echo ""
+echo "Usage:"
+echo "  OpenVPN:  sudo openvpn --config $OUTPUT_FILE"
+echo ""
+echo "  Gluetun:  VPN_SERVICE_PROVIDER=custom"
+echo "            VPN_TYPE=openvpn"
+echo "            OPENVPN_CUSTOM_CONFIG=/gluetun/$OUTPUT_FILE"
+echo ""

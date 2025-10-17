@@ -1,0 +1,11 @@
+fish_add_path -pmP {{ .chezmoi.homeDir }}/.local/bin
+if test -d {{ .chezmoi.homeDir }}/node_modules/.bin
+    fish_add_path -pmP {{ .chezmoi.homeDir }}/node_modules/.bin
+end
+if test -d {{ .chezmoi.homeDir }}/.cargo/bin
+  fish_add_path -pmP {{ .chezmoi.homeDir }}/.cargo/bin
+end
+if command -qs go
+  fish_add_path -pmP (go env GOROOT)/bin
+  fish_add_path -pmP (go env GOPATH)/bin
+end

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if pgrep -x sunsetr >/dev/null; then
+  pkill -x sunsetr
+else
+  uwsm-app -- sunsetr >/dev/null 2>&1 &
+fi

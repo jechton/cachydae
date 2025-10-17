@@ -1,0 +1,10 @@
+# Changes require a relaunch of Hyprland to take effect.
+
+export PATH=$HOME/.local/bin/:$PATH
+
+# Set default terminal and editor
+source ~/.config/uwsm/default
+
+eval "$(mise activate bash)"
+if [ "$SHELL" = "/bin/fish" ] && command -v mise &> /dev/null; then
+  mise activate fish | source

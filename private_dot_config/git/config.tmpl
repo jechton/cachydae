@@ -1,0 +1,85 @@
+# vim: set ft=gitconfig:
+
+[user]
+  name = Jeremiah
+  email = 44993244+jechton@users.noreply.github.com
+{{ if not .machine.headless -}}
+  signingkey = ~/.ssh/id_ed25519.pub
+{{- end }}
+
+{{ if not .machine.headless -}}
+[url "ssh://git@github.com"]
+  insteadOf = https://github.com
+{{- end }}
+
+{{$ghPath := lookPath "gh" -}}
+{{- if $ghPath -}}
+[credential "ssh://github.com"]
+  helper = !{{ $ghPath }} auth git-credential
+{{- end }}
+
+[credential]
+  helper = cache --timeout 21600 # six hours
+
+[column]
+  ui = auto
+
+[branch]
+  sort = -committerdate
+
+[tag]
+  sort = version:refname
+
+[init]
+  defaultBranch = "main"
+
+[gpg]
+  format = ssh
+
+[diff]
+  algorithm = "histogram"
+  colorMoved = "plain"
+  mnemonicPrefix = "true"
+  renames = "true"
+
+[help]
+  autocorrect = prompt
+
+[fetch]
+  prune = true
+  pruneTags = true
+  all = true
+
+[pull]
+  rebase = true
+
+[commit]
+  verbose = true
+{{ if not .machine.headless -}}
+  gpgsign = true
+{{- end }}
+
+[absorb]
+  maxStack = 100
+
+[push]
+  default = simple
+  autoSetupRemote = true
+  followTags = true
+
+[merge]
+  conflictstyle = zdiff3
+
+[rebase]
+  autoStash = true
+  autoSquash = true
+  updateRefs = true
+  abbreviateCommands = true
+  missingCommitsCheck = error
+
+[rerere]
+  enabled = true
+  autoupdate = true
+
+[sequence]
+  editor = interactive-rebase-tool

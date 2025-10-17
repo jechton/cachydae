@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cmd="$*"
+exec setsid uwsm-app -- alacritty -o font.size=9 --class=Cachydae --title=Cachydae -e bash -c "$cmd; show-done"

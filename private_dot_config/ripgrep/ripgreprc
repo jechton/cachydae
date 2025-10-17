@@ -1,0 +1,8 @@
+--hidden
+
+--glob=!.git/*
+
+--smart-case
+
+-z
+-N

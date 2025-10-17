@@ -1,0 +1,152 @@
+[packages]
+cachydae = [
+  "7zip",                         # archiver
+  "alacritty",                    # terminal
+  "aria2",                        # downloader
+  "avahi",                        # network discovery
+  "bash-completion",
+  "bat",                          # colorful cat
+  "bat-extras",                   # bat manpages and more
+  "bitwarden",                    # password manager
+  "bitwarden-cli",                # password manager
+  "bluetui",                      # bluetooth manager
+  "brightnessctl",
+  "btop",                         # rescource monitor
+  "cargo",                        # rust package manager
+  "clang",                        # c compiler
+  "cups",                         # printer
+  "cups-browsed",                 # printer helper daemon
+  "cups-filters",                 # printer filters
+  "cups-pdf",                     # pdf printer
+  "docker",                       # container runtime
+  "docker-buildx",                # container builder
+  "docker-compose",               # container orchestrator
+  "dust",                         # disk usage analyzer
+  "elephant",                     # provider for application launcher
+  "elephant-bluetooth",
+  "elephant-calc",
+  "elephant-clipboard",
+  "elephant-desktopapplications",
+  "elephant-files",
+  "elephant-menus",
+  "elephant-providerlist",
+  "elephant-runner",
+  "elephant-symbols",
+  "elephant-todo",
+  "elephant-unicode",
+  "elephant-websearch",
+  "eza",                          # ls replacement
+  "fastfetch",                    # system info
+  "fcitx5",                       # flexible content-aware input tool
+  "fcitx5-gtk",
+  "fcitx5-qt",
+  "fd",                           # find replacement
+  "ffmpegthumbnailer",            # thumbnail generator
+  "fontconfig",
+  "fzf",                          # fuzzy finder
+  "fwupd",                        # firmware updater
+  "github-cli",
+  "ghostty",                      # terminal
+  "gnome-calculator",
+  "gnome-disk-utility",
+  "gnome-keyring",
+  "gnome-themes-extra",
+  "gpu-screen-recorder",          # screen recorder
+  "gum",                          # tool for glamorous shell scripts
+  "gvfs-mtp",                     #  virtual file system implementation for gio - mtp backend
+  "gvfs-smb",                     # virtual file system implementation for gio - smb backend
+  "hypridle",                     # hyprland's idle daemon
+  "hyprland",                     # tiling window manager
+  "hyprland-qtutils",             # hyprland qt utility apps
+  "hyprlock",                     # screen locking
+  "hyprpicker",                   # color picker
+  "hyprshot",                     # screenshots
+  "imagemagick",
+  "impala",                       # wifi tui
+  "imv",                          # image viewer
+  "inetutils",                    # collection of network programs
+  "iwd",                          # internet wireless daemon
+  "jq",
+  "kdenlive",                     # video editor
+  "kvantum-qt5",                  # theme engine for qt5
+  "lazydocker",                   # docker wrapper
+  "lazygit",                      # git wrapper
+  "less",                         # pager
+  "libyaml",                      # yaml library
+  "libqalculate",                 # multi-purpose desktop calculator
+  "libreoffice",                  # office suite
+  "llvm",                         # compiler infrastructure
+  "localsend",                    #  local file sharing
+  "luarocks",                     # lua modules
+  "mako",                         # notification daemon
+  "man",                          # man pages
+  "mariadb-libs",
+  "mise",                         # the front-end to your dev env
+  "mpv",                          # media player
+  "nautilus",                     # file manager
+  "noto-fonts",
+  "noto-fonts-cjk",
+  "noto-fonts-extra",
+  "nss-mdns",                     # glibc plugin providing host name resolution vis mdns
+  "nvim",                         # text editor
+  "obsidian",                     # markdown notes
+  "pamixer",                      # volume control
+  "papers",                       # pdf viewer
+  "playerctl",                    # media player control
+  "plocate",                      # locate replacement
+  "plymouth",                     # splash screen
+  "polkit-gnome",                 # polkit authentication agent
+  "postgresql-libs",
+  "power-profiles-daemon",
+  "procs",                        # better ps
+  "python-gobject",               # python bindings for gobject
+  "python-poetry-core",           # poetry build backend and core utilities
+  "python-terminaltexteffects",   # visual effects engine for terminal text
+  "qt5-wayland",                  # apis for wayland
+  "ripgrep",                      # grep replacement
+  "satty",                        # screenshot annotation tool
+  "sd",                           # better sed
+  "signal-desktop",               # messenger
+  "slurp",                        # select a region in a wayland compositor
+  "syncthing",                    # sync tool
+  "starship",                     # prompt
+  "steam",                        # game launcher
+  "sunsetr-bin",                  # blue light filter
+  "sushi",                        # previewer for nautilus
+  "swaybg",                       # background setter for sway
+  "swayosd",                      # osd for sway
+  "system-config-printer",        # printer configuration tool and status applet
+  "tailscale",                    # mesh vpn client
+  "thefuck",                      # command corrector
+  "trash-cli",                    # trashcan
+  "tree-sitter-cli",              # incremental parsing library
+  "ttf-cascadia-mono-nerd",
+  "ttf-iosevka-nerd",
+  "ttf-jetbrains-mono-nerd",
+  "tzupdate",                     # set timezone based on IP geolocation
+  "ufw",                          # firewall
+  "ufw-docker",                   # docker firewall integration
+  "ugrep",                        # drop-in better grep
+  "ungoogled-chromium-bin",       # web browser
+  "unzip",                        # archive extractor
+  "uv",                           # python package manager
+  "uwsm",                         # wayland session manager
+  "visual-studio-code-bin",       # code editor
+  "walker-bin",                   # application launcher
+  "waybar",                       # status bar
+  "wf-recorder",                  # screen recorder
+  "whois",
+  "wireless-regdb",               # wireless regulatory database
+  "wiremix",                      # audio mixer
+  "wireplumber",                  # audio server
+  "wl-clipboard",                 # wayland clipboard
+  "wl-screenrec",                 # wlroots screen recorder
+  "woff2-font-awesome",
+  "xdg-desktop-portal-gtk",
+  "xdg-desktop-portal-hyprland",
+  "xmlstarlet",                   # xml tools
+  "xournalpp",                    # handwriting notetaking software with pdf annotation supports
+  "yaru-icon-theme",
+  "zen-browser-bin",              # web browser
+  "zoxide",                       # directory jumping
+]

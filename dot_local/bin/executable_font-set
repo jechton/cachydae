@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+CURRENT_FONT_DIR="$HOME/.config/cachydae/current/font"
+FONTCONFIG_OVERRIDE_FILE="$HOME/.config/fontconfig/conf.d/50-monospace-override.conf"
+font_name="$1"
+
+FONTCONFIG_XML='<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+    <alias>
+        <family>monospace</family>
+        <prefer>
+            <family>'$font_name'</family>
+        </prefer>
+    </alias>
+</fontconfig>'
+
+if [[ -n "$font_name" && "$font_name" != "CNCLD" ]]; then
+    if fc-list | grep -iq "$font_name"; then
+
+        ALACRITTY_CONF="$CURRENT_FONT_DIR/alacritty.toml"
+        if [[ -f "$ALACRITTY_CONF" ]]; then
+            sed -i "s/family = \".*\"/family = \"$font_name\"/g" "$ALACRITTY_CONF"
+        fi
+
+        KITTY_CONF="$CURRENT_FONT_DIR/kitty.conf"
+        if [[ -f "$KITTY_CONF" ]]; then
+            sed -i "s/^font_family .*/font_family $font_name/g" "$KITTY_CONF"
+            pkill -USR1 kitty
+        fi
+
+        GHOSTTY_CONF="$CURRENT_FONT_DIR/ghostty.conf"
+        if [[ -f "$GHOSTTY_CONF" ]]; then
+            sed -i "s/font-family = \".*\"/font-family = \"$font_name\"/g" "$GHOSTTY_CONF"
+            pkill -SIGUSR2 ghostty
+        fi
+
+        HYPRLOCK_CONF="$CURRENT_FONT_DIR/hyprlock.conf"
+        if [[ -f "$HYPRLOCK_CONF" ]]; then
+            sed -i "s/font_family = \".*\"/font_family = \"$font_name\"/g"  "$HYPRLOCK_CONF"
+        fi
+
+        WAYBAR_STYLE_FILE="$CURRENT_FONT_DIR/waybar.css"
+        if [[ -f "$WAYBAR_STYLE_FILE" ]]; then
+            sed -i "s/font-family: .*/font-family: '$font_name';/g" "$WAYBAR_STYLE_FILE"
+        fi
+
+        SWAYOSD_STYLE_FILE="$CURRENT_FONT_DIR/swayosd.css"
+        if [[ -f "$SWAYOSD_STYLE_FILE" ]]; then
+            sed -i "s/font-family: .*/font-family: '$font_name';/g" "$SWAYOSD_STYLE_FILE"
+        fi
+
+        mkdir -p "$(dirname "$FONTCONFIG_OVERRIDE_FILE")"
+        echo "$FONTCONFIG_XML" > "$FONTCONFIG_OVERRIDE_FILE"
+
+        fc-cache -fv &> /dev/null
+
+        VS_CODE_FONT_FILE="$HOME/.config/Code/User/settings.json"
+        if [[ -f "$VS_CODE_FONT_FILE" ]]; then
+            sed -i "s/\"editor.fontFamily\": .*/\"editor.fontFamily\": \"$font_name\",/g" "$VS_CODE_FONT_FILE"
+        fi
+
+        restart-waybar
+        restart-swayosd
+        restart-walker
+    else
+        echo "Font '$font_name' not found."
+        exit 1
+    fi
+else
+    echo "Usage: font-set <font-name>"
+fi

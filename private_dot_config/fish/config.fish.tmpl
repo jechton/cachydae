@@ -1,0 +1,34 @@
+## Source custom configs
+for file in $__fish_config_dir/custom.d/*.fish
+    source $file
+end
+
+# pnpm
+set -gx PNPM_HOME "{{ .chezmoi.homeDir }}/.local/share/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+    set -gx PATH "$PNPM_HOME" $PATH
+end
+
+# bun
+set --export BUN_INSTALL "$HOME/.bun"
+set --export PATH $BUN_INSTALL/bin $PATH
+
+if status is-interactive
+    if command -q starship
+        function starship_transient_prompt_func
+            starship module character
+        end
+        starship init fish | source
+        enable_transience
+    end
+
+    # {{ if not .machine.pi }}
+    if command -q zoxide
+        zoxide init fish --cmd cd | source
+    end
+    # {{ end }}
+
+    if command -q tv
+        tv init fish | source
+    end
+end
